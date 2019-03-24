@@ -1,0 +1,350 @@
+# JMH version: 1.21
+# VM version: JDK 9.0.4, Java HotSpot(TM) 64-Bit Server VM, 9.0.4+11
+# VM invoker: /usr/lib/jvm/java-9-oracle/bin/java
+# VM options: <none>
+# Warmup: 5 iterations, 10 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: net.sourceforge.pmd.MyBenchmark.testNewParser
+# Parameters: (sourceFname = /JavaParser.java)
+
+# Run progress: 0,00% complete, ETA 00:33:20
+# Fork: 1 of 5
+# Warmup Iteration   1: 70165,243 ops/s
+# Warmup Iteration   2: 89573,784 ops/s
+# Warmup Iteration   3: 84245,566 ops/s
+# Warmup Iteration   4: 89629,555 ops/s
+# Warmup Iteration   5: 84487,423 ops/s
+Iteration   1: 87280,650 ops/s
+Iteration   2: 89662,293 ops/s
+Iteration   3: 87613,749 ops/s
+Iteration   4: 82584,709 ops/s
+Iteration   5: 81879,278 ops/s
+
+# Run progress: 5,00% complete, ETA 00:31:47
+# Fork: 2 of 5
+# Warmup Iteration   1: 77606,969 ops/s
+# Warmup Iteration   2: 88734,372 ops/s
+# Warmup Iteration   3: 82991,650 ops/s
+# Warmup Iteration   4: 91596,998 ops/s
+# Warmup Iteration   5: 86439,318 ops/s
+Iteration   1: 74845,932 ops/s
+Iteration   2: 86860,967 ops/s
+Iteration   3: 91123,572 ops/s
+Iteration   4: 93444,102 ops/s
+Iteration   5: 87157,055 ops/s
+
+# Run progress: 10,00% complete, ETA 00:30:07
+# Fork: 3 of 5
+# Warmup Iteration   1: 79277,242 ops/s
+# Warmup Iteration   2: 85085,969 ops/s
+# Warmup Iteration   3: 80913,661 ops/s
+# Warmup Iteration   4: 83953,707 ops/s
+# Warmup Iteration   5: 88061,571 ops/s
+Iteration   1: 87968,661 ops/s
+Iteration   2: 90720,228 ops/s
+Iteration   3: 90205,519 ops/s
+Iteration   4: 87093,207 ops/s
+Iteration   5: 91134,601 ops/s
+
+# Run progress: 15,00% complete, ETA 00:28:27
+# Fork: 4 of 5
+# Warmup Iteration   1: 76589,180 ops/s
+# Warmup Iteration   2: 88779,390 ops/s
+# Warmup Iteration   3: 86768,709 ops/s
+# Warmup Iteration   4: 88985,642 ops/s
+# Warmup Iteration   5: 87505,036 ops/s
+Iteration   1: 81839,539 ops/s
+Iteration   2: 86527,597 ops/s
+Iteration   3: 85326,340 ops/s
+Iteration   4: 82576,217 ops/s
+Iteration   5: 88653,254 ops/s
+
+# Run progress: 20,00% complete, ETA 00:26:46
+# Fork: 5 of 5
+# Warmup Iteration   1: 76641,226 ops/s
+# Warmup Iteration   2: 88445,039 ops/s
+# Warmup Iteration   3: 90425,006 ops/s
+# Warmup Iteration   4: 91046,106 ops/s
+# Warmup Iteration   5: 84328,804 ops/s
+Iteration   1: 84114,341 ops/s
+Iteration   2: 83947,876 ops/s
+Iteration   3: 90099,498 ops/s
+Iteration   4: 85215,220 ops/s
+Iteration   5: 89464,470 ops/s
+
+
+Result "net.sourceforge.pmd.MyBenchmark.testNewParser":
+  86693,555 ±(99.9%) 3011,230 ops/s [Average]
+  (min, avg, max) = (74845,932, 86693,555, 93444,102), stdev = 4019,905
+  CI (99.9%): [83682,325, 89704,785] (assumes normal distribution)
+
+
+# JMH version: 1.21
+# VM version: JDK 9.0.4, Java HotSpot(TM) 64-Bit Server VM, 9.0.4+11
+# VM invoker: /usr/lib/jvm/java-9-oracle/bin/java
+# VM options: <none>
+# Warmup: 5 iterations, 10 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: net.sourceforge.pmd.MyBenchmark.testNewVisit
+# Parameters: (sourceFname = /JavaParser.java)
+
+# Run progress: 25,00% complete, ETA 00:25:06
+# Fork: 1 of 5
+# Warmup Iteration   1: 66058,704 ops/s
+# Warmup Iteration   2: 85086,748 ops/s
+# Warmup Iteration   3: 87574,019 ops/s
+# Warmup Iteration   4: 73389,957 ops/s
+# Warmup Iteration   5: 92199,521 ops/s
+Iteration   1: 93982,801 ops/s
+Iteration   2: 85970,078 ops/s
+Iteration   3: 78277,665 ops/s
+Iteration   4: 90217,660 ops/s
+Iteration   5: 89046,607 ops/s
+
+# Run progress: 30,00% complete, ETA 00:23:26
+# Fork: 2 of 5
+# Warmup Iteration   1: 70576,742 ops/s
+# Warmup Iteration   2: 81859,658 ops/s
+# Warmup Iteration   3: 86711,648 ops/s
+# Warmup Iteration   4: 86594,339 ops/s
+# Warmup Iteration   5: 90636,028 ops/s
+Iteration   1: 88448,356 ops/s
+Iteration   2: 88713,656 ops/s
+Iteration   3: 89756,067 ops/s
+Iteration   4: 88439,448 ops/s
+Iteration   5: 86390,932 ops/s
+
+# Run progress: 35,00% complete, ETA 00:21:45
+# Fork: 3 of 5
+# Warmup Iteration   1: 75338,191 ops/s
+# Warmup Iteration   2: 83455,282 ops/s
+# Warmup Iteration   3: 84670,886 ops/s
+# Warmup Iteration   4: 82193,986 ops/s
+# Warmup Iteration   5: 81058,586 ops/s
+Iteration   1: 87778,264 ops/s
+Iteration   2: 85075,495 ops/s
+Iteration   3: 77575,255 ops/s
+Iteration   4: 81778,223 ops/s
+Iteration   5: 84192,046 ops/s
+
+# Run progress: 40,00% complete, ETA 00:20:05
+# Fork: 4 of 5
+# Warmup Iteration   1: 70651,712 ops/s
+# Warmup Iteration   2: 79877,164 ops/s
+# Warmup Iteration   3: 87721,347 ops/s
+# Warmup Iteration   4: 89604,538 ops/s
+# Warmup Iteration   5: 87937,926 ops/s
+Iteration   1: 84077,086 ops/s
+Iteration   2: 87684,239 ops/s
+Iteration   3: 85652,725 ops/s
+Iteration   4: 84107,261 ops/s
+Iteration   5: 82307,103 ops/s
+
+# Run progress: 45,00% complete, ETA 00:18:24
+# Fork: 5 of 5
+# Warmup Iteration   1: 70510,091 ops/s
+# Warmup Iteration   2: 86040,411 ops/s
+# Warmup Iteration   3: 81316,943 ops/s
+# Warmup Iteration   4: 82323,897 ops/s
+# Warmup Iteration   5: 86546,645 ops/s
+Iteration   1: 82272,572 ops/s
+Iteration   2: 83249,800 ops/s
+Iteration   3: 89667,684 ops/s
+Iteration   4: 79135,432 ops/s
+Iteration   5: 84086,880 ops/s
+
+
+Result "net.sourceforge.pmd.MyBenchmark.testNewVisit":
+  85515,333 ±(99.9%) 2995,461 ops/s [Average]
+  (min, avg, max) = (77575,255, 85515,333, 93982,801), stdev = 3998,855
+  CI (99.9%): [82519,872, 88510,795] (assumes normal distribution)
+
+
+# JMH version: 1.21
+# VM version: JDK 9.0.4, Java HotSpot(TM) 64-Bit Server VM, 9.0.4+11
+# VM invoker: /usr/lib/jvm/java-9-oracle/bin/java
+# VM options: <none>
+# Warmup: 5 iterations, 10 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: net.sourceforge.pmd.MyBenchmark.testOldParser
+# Parameters: (sourceFname = /JavaParser.java)
+
+# Run progress: 50,00% complete, ETA 00:16:44
+# Fork: 1 of 5
+# Warmup Iteration   1: 75898,310 ops/s
+# Warmup Iteration   2: 84279,230 ops/s
+# Warmup Iteration   3: 83136,886 ops/s
+# Warmup Iteration   4: 89131,720 ops/s
+# Warmup Iteration   5: 78503,007 ops/s
+Iteration   1: 84931,392 ops/s
+Iteration   2: 87901,057 ops/s
+Iteration   3: 90926,630 ops/s
+Iteration   4: 86577,313 ops/s
+Iteration   5: 92563,760 ops/s
+
+# Run progress: 55,00% complete, ETA 00:15:04
+# Fork: 2 of 5
+# Warmup Iteration   1: 73172,877 ops/s
+# Warmup Iteration   2: 83325,132 ops/s
+# Warmup Iteration   3: 88372,327 ops/s
+# Warmup Iteration   4: 86608,011 ops/s
+# Warmup Iteration   5: 90736,738 ops/s
+Iteration   1: 91652,194 ops/s
+Iteration   2: 85570,416 ops/s
+Iteration   3: 86531,992 ops/s
+Iteration   4: 84806,922 ops/s
+Iteration   5: 84981,551 ops/s
+
+# Run progress: 60,00% complete, ETA 00:13:23
+# Fork: 3 of 5
+# Warmup Iteration   1: 69492,365 ops/s
+# Warmup Iteration   2: 84912,100 ops/s
+# Warmup Iteration   3: 85639,052 ops/s
+# Warmup Iteration   4: 81176,821 ops/s
+# Warmup Iteration   5: 81670,360 ops/s
+Iteration   1: 83814,215 ops/s
+Iteration   2: 87470,350 ops/s
+Iteration   3: 82477,980 ops/s
+Iteration   4: 85297,041 ops/s
+Iteration   5: 88554,986 ops/s
+
+# Run progress: 65,00% complete, ETA 00:11:43
+# Fork: 4 of 5
+# Warmup Iteration   1: 71079,806 ops/s
+# Warmup Iteration   2: 80720,044 ops/s
+# Warmup Iteration   3: 85340,199 ops/s
+# Warmup Iteration   4: 86665,672 ops/s
+# Warmup Iteration   5: 85933,975 ops/s
+Iteration   1: 88063,350 ops/s
+Iteration   2: 82238,797 ops/s
+Iteration   3: 92110,764 ops/s
+Iteration   4: 78959,924 ops/s
+Iteration   5: 86228,232 ops/s
+
+# Run progress: 70,00% complete, ETA 00:10:02
+# Fork: 5 of 5
+# Warmup Iteration   1: 73001,259 ops/s
+# Warmup Iteration   2: 89109,553 ops/s
+# Warmup Iteration   3: 83812,143 ops/s
+# Warmup Iteration   4: 87397,597 ops/s
+# Warmup Iteration   5: 75075,410 ops/s
+Iteration   1: 77453,086 ops/s
+Iteration   2: 80875,626 ops/s
+Iteration   3: 76374,143 ops/s
+Iteration   4: 78199,744 ops/s
+Iteration   5: 80186,336 ops/s
+
+
+Result "net.sourceforge.pmd.MyBenchmark.testOldParser":
+  84989,912 ±(99.9%) 3419,571 ops/s [Average]
+  (min, avg, max) = (76374,143, 84989,912, 92563,760), stdev = 4565,029
+  CI (99.9%): [81570,341, 88409,483] (assumes normal distribution)
+
+
+# JMH version: 1.21
+# VM version: JDK 9.0.4, Java HotSpot(TM) 64-Bit Server VM, 9.0.4+11
+# VM invoker: /usr/lib/jvm/java-9-oracle/bin/java
+# VM options: <none>
+# Warmup: 5 iterations, 10 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: net.sourceforge.pmd.MyBenchmark.testOldVisit
+# Parameters: (sourceFname = /JavaParser.java)
+
+# Run progress: 75,00% complete, ETA 00:08:22
+# Fork: 1 of 5
+# Warmup Iteration   1: 66097,778 ops/s
+# Warmup Iteration   2: 79652,115 ops/s
+# Warmup Iteration   3: 73070,275 ops/s
+# Warmup Iteration   4: 73637,775 ops/s
+# Warmup Iteration   5: 69882,861 ops/s
+Iteration   1: 80310,348 ops/s
+Iteration   2: 68718,512 ops/s
+Iteration   3: 71799,327 ops/s
+Iteration   4: 79360,990 ops/s
+Iteration   5: 75388,721 ops/s
+
+# Run progress: 80,00% complete, ETA 00:06:41
+# Fork: 2 of 5
+# Warmup Iteration   1: 62191,418 ops/s
+# Warmup Iteration   2: 71398,472 ops/s
+# Warmup Iteration   3: 79500,282 ops/s
+# Warmup Iteration   4: 81474,289 ops/s
+# Warmup Iteration   5: 82895,911 ops/s
+Iteration   1: 71189,410 ops/s
+Iteration   2: 82394,117 ops/s
+Iteration   3: 85621,408 ops/s
+Iteration   4: 86161,668 ops/s
+Iteration   5: 69708,298 ops/s
+
+# Run progress: 85,00% complete, ETA 00:05:01
+# Fork: 3 of 5
+# Warmup Iteration   1: 60844,897 ops/s
+# Warmup Iteration   2: 72320,511 ops/s
+# Warmup Iteration   3: 70292,908 ops/s
+# Warmup Iteration   4: 75954,675 ops/s
+# Warmup Iteration   5: 74550,052 ops/s
+Iteration   1: 76374,197 ops/s
+Iteration   2: 83897,259 ops/s
+Iteration   3: 75055,478 ops/s
+Iteration   4: 76180,961 ops/s
+Iteration   5: 74572,406 ops/s
+
+# Run progress: 90,00% complete, ETA 00:03:20
+# Fork: 4 of 5
+# Warmup Iteration   1: 66849,471 ops/s
+# Warmup Iteration   2: 82600,843 ops/s
+# Warmup Iteration   3: 73730,322 ops/s
+# Warmup Iteration   4: 66994,546 ops/s
+# Warmup Iteration   5: 82075,439 ops/s
+Iteration   1: 75909,767 ops/s
+Iteration   2: 74006,590 ops/s
+Iteration   3: 68089,344 ops/s
+Iteration   4: 79013,579 ops/s
+Iteration   5: 77006,423 ops/s
+
+# Run progress: 95,00% complete, ETA 00:01:40
+# Fork: 5 of 5
+# Warmup Iteration   1: 68320,646 ops/s
+# Warmup Iteration   2: 74260,902 ops/s
+# Warmup Iteration   3: 73228,601 ops/s
+# Warmup Iteration   4: 75745,570 ops/s
+# Warmup Iteration   5: 76062,262 ops/s
+Iteration   1: 75909,309 ops/s
+Iteration   2: 69735,660 ops/s
+Iteration   3: 77599,027 ops/s
+Iteration   4: 75764,003 ops/s
+Iteration   5: 78610,401 ops/s
+
+
+Result "net.sourceforge.pmd.MyBenchmark.testOldVisit":
+  76335,088 ±(99.9%) 3708,865 ops/s [Average]
+  (min, avg, max) = (68089,344, 76335,088, 86161,668), stdev = 4951,229
+  CI (99.9%): [72626,223, 80043,953] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:33:29
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+Benchmark                     (sourceFname)   Mode  Cnt      Score      Error  Units
+MyBenchmark.testNewParser  /JavaParser.java  thrpt   25  86693,555 ± 3011,230  ops/s
+MyBenchmark.testOldParser  /JavaParser.java  thrpt   25  84989,912 ± 3419,571  ops/s
+
+MyBenchmark.testNewVisit   /JavaParser.java  thrpt   25  85515,333 ± 2995,461  ops/s
+MyBenchmark.testOldVisit   /JavaParser.java  thrpt   25  76335,088 ± 3708,865  ops/s
