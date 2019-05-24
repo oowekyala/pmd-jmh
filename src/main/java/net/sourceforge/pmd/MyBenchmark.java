@@ -66,20 +66,14 @@ public class MyBenchmark {
 
 
     @Benchmark
-    public void testNewParser(ParserState state, Blackhole blackhole) {
-        state.bench(false, blackhole::consume);
+    public void testStream(ParserState state, Blackhole blackhole) {
+        state.bench(node -> node.descendantStream().forEach(blackhole::consume));
     }
 
 
     @Benchmark
-    public void testOldParser(ParserState state, Blackhole blackhole) {
-        state.bench(true, blackhole::consume);
-    }
-
-
-    @Benchmark
-    public void testNewVisit(ParserState state, Blackhole blackhole) {
-        state.bench(false, node -> new JavaParserVisitorAdapter() {
+    public void testVisitor(ParserState state, Blackhole blackhole) {
+        state.bench(node -> new JavaParserVisitorAdapter() {
             @Override
             public Object visit(@Nonnull JavaNode node, Object data) {
                 blackhole.consume(data);
@@ -89,23 +83,10 @@ public class MyBenchmark {
     }
 
 
-    @Benchmark
-    public void testOldVisit(ParserState state, Blackhole blackhole) {
-        state.bench(true, node -> new net.sourceforge.pmd.lang.oldjava.ast.JavaParserVisitorAdapter() {
-            @Override
-            public Object visit(@Nonnull net.sourceforge.pmd.lang.oldjava.ast.JavaNode node, Object data) {
-                blackhole.consume(data);
-                return super.visit(node, data);
-            }
-        }.visit((net.sourceforge.pmd.lang.oldjava.ast.ASTCompilationUnit) node, new Object()));
-    }
-
-
     @State(Scope.Benchmark)
     public static class ParserState {
 
         Parser newParser;
-        Parser oldParser;
         private Reader source;
 
         @Param( {"/JavaParser.java"})
@@ -120,20 +101,13 @@ public class MyBenchmark {
 
             newParser = lvh.getParser(lvh.getDefaultParserOptions());
 
-            LanguageVersionHandler oldLvh = LanguageRegistry.findLanguageByTerseName("oldjava")
-                                                            .getDefaultVersion()
-                                                            .getLanguageVersionHandler();
-
-            oldParser = oldLvh.getParser(oldLvh.getDefaultParserOptions());
-
-
             InputStreamReader streamReader = new InputStreamReader(MyBenchmark.class.getResourceAsStream(sourceFname));
             source = new StringReader(IOUtils.toString(streamReader));
             streamReader.close();
         }
 
-        public void bench(boolean old, Consumer<Node> blackhole) {
-            Node acu = (old ? oldParser : newParser).parse(sourceFname, source);
+        public void bench(Consumer<Node> blackhole) {
+            Node acu = newParser.parse(sourceFname, source);
             blackhole.accept(acu);
         }
 
