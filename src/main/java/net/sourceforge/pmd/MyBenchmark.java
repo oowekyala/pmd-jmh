@@ -37,7 +37,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import javax.annotation.Nonnull;
 
 import org.apache.commons.io.IOUtils;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -76,29 +75,29 @@ public class MyBenchmark {
         state.bench(true, blackhole::consume);
     }
 
-
-    @Benchmark
-    public void testNewVisit(ParserState state, Blackhole blackhole) {
-        state.bench(false, node -> new JavaParserVisitorAdapter() {
-            @Override
-            public Object visit(@Nonnull JavaNode node, Object data) {
-                blackhole.consume(data);
-                return super.visit(node, data);
-            }
-        }.visit((ASTCompilationUnit) node, new Object()));
-    }
-
-
-    @Benchmark
-    public void testOldVisit(ParserState state, Blackhole blackhole) {
-        state.bench(true, node -> new net.sourceforge.pmd.lang.oldjava.ast.JavaParserVisitorAdapter() {
-            @Override
-            public Object visit(@Nonnull net.sourceforge.pmd.lang.oldjava.ast.JavaNode node, Object data) {
-                blackhole.consume(data);
-                return super.visit(node, data);
-            }
-        }.visit((net.sourceforge.pmd.lang.oldjava.ast.ASTCompilationUnit) node, new Object()));
-    }
+//
+//    @Benchmark
+//    public void testNewVisit(ParserState state, Blackhole blackhole) {
+//        state.bench(false, node -> new JavaParserVisitorAdapter() {
+//            @Override
+//            public Object visit(JavaNode node, Object data) {
+//                blackhole.consume(data);
+//                return super.visit(node, data);
+//            }
+//        }.visit((ASTCompilationUnit) node, new Object()));
+//    }
+//
+//
+//    @Benchmark
+//    public void testOldVisit(ParserState state, Blackhole blackhole) {
+//        state.bench(true, node -> new net.sourceforge.pmd.lang.oldjava.ast.JavaParserVisitorAdapter() {
+//            @Override
+//            public Object visit(net.sourceforge.pmd.lang.oldjava.ast.JavaNode node, Object data) {
+//                blackhole.consume(data);
+//                return super.visit(node, data);
+//            }
+//        }.visit((net.sourceforge.pmd.lang.oldjava.ast.ASTCompilationUnit) node, new Object()));
+//    }
 
 
     @State(Scope.Benchmark)
