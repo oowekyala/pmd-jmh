@@ -37,7 +37,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import javax.annotation.Nonnull;
 
 import org.apache.commons.io.IOUtils;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -55,9 +54,7 @@ import net.sourceforge.pmd.lang.LanguageRegistry;
 import net.sourceforge.pmd.lang.LanguageVersionHandler;
 import net.sourceforge.pmd.lang.Parser;
 import net.sourceforge.pmd.lang.ast.Node;
-import net.sourceforge.pmd.lang.java.ast.ASTCompilationUnit;
-import net.sourceforge.pmd.lang.java.ast.JavaNode;
-import net.sourceforge.pmd.lang.java.ast.JavaParserVisitorAdapter;
+import net.sourceforge.pmd.lang.java.ast.ASTBreakStatement;
 
 
 @BenchmarkMode(Mode.Throughput)
@@ -67,19 +64,13 @@ public class MyBenchmark {
 
     @Benchmark
     public void testStream(ParserState state, Blackhole blackhole) {
-        state.bench(node -> node.descendantStream().forEach(blackhole::consume));
+        state.bench(node -> node.descendants(ASTBreakStatement.class).first().ifPresent(blackhole::consume));
     }
 
 
     @Benchmark
-    public void testVisitor(ParserState state, Blackhole blackhole) {
-        state.bench(node -> new JavaParserVisitorAdapter() {
-            @Override
-            public Object visit(@Nonnull JavaNode node, Object data) {
-                blackhole.consume(data);
-                return super.visit(node, data);
-            }
-        }.visit((ASTCompilationUnit) node, new Object()));
+    public void testOldApproach(ParserState state, Blackhole blackhole) {
+        state.bench(node -> blackhole.consume(node.getFirstDescendantOfType(ASTBreakStatement.class)));
     }
 
 
