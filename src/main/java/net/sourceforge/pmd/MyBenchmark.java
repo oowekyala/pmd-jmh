@@ -58,6 +58,12 @@ import net.sourceforge.pmd.lang.java.ast.ASTCompilationUnit;
 import net.sourceforge.pmd.lang.java.ast.JavaNode;
 import net.sourceforge.pmd.lang.java.ast.JavaParserVisitorAdapter;
 
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.Provider;
+import com.github.javaparser.Providers;
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.CompilationUnit;
+
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
@@ -66,13 +72,13 @@ public class MyBenchmark {
 
     @Benchmark
     public void testNewParser(ParserState state, Blackhole blackhole) {
-        state.bench(false, blackhole::consume);
+        state.bench(false, blackhole);
     }
 
 
     @Benchmark
-    public void testOldParser(ParserState state, Blackhole blackhole) {
-        state.bench(true, blackhole::consume);
+    public void testJavaParser(ParserState state, Blackhole blackhole) {
+        state.benchJP(blackhole);
     }
 
 //
@@ -107,7 +113,11 @@ public class MyBenchmark {
         Parser oldParser;
         private Reader source;
 
-        @Param( {"/JavaParser.java"})
+        @Param( {
+		"/JavaParser.java", 
+		// "/PLSQLParser.java"
+	})
+
         private String sourceFname;
 
         @Setup
@@ -131,9 +141,12 @@ public class MyBenchmark {
             streamReader.close();
         }
 
-        public void bench(boolean old, Consumer<Node> blackhole) {
-            Node acu = (old ? oldParser : newParser).parse(sourceFname, source);
-            blackhole.accept(acu);
+        public void bench(boolean old, Blackhole blackhole) {
+            blackhole.consume((old ? oldParser : newParser).parse(sourceFname, source));
+        }
+
+        public void benchJP(Blackhole blackhole) {
+            blackhole.consume(StaticJavaParser.parse(source));
         }
 
 
