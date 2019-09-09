@@ -1,0 +1,244 @@
+# JMH version: 1.21
+# VM version: JDK 10.0.2, Java HotSpot(TM) 64-Bit Server VM, 10.0.2+13
+# VM invoker: /usr/lib/jvm/java-10-oracle/bin/java
+# VM options: <none>
+# Warmup: 3 iterations, 5 s each
+# Measurement: 3 iterations, 5 s each
+# Timeout: 15 s per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: net.sourceforge.pmd.MyBenchmark.testChildrenClassThenFirst
+# Parameters: (sourceFname = /PLSQLParser.java)
+
+# Run progress: 0,00% complete, ETA 00:07:30
+# Fork: 1 of 3
+# Warmup Iteration   1: 55955,375 ops/s
+# Warmup Iteration   2: 115692,466 ops/s
+# Warmup Iteration   3: 118910,315 ops/s
+Iteration   1: 118778,649 ops/s
+Iteration   2: 118338,626 ops/s
+Iteration   3: 118377,575 ops/s
+
+# Run progress: 6,67% complete, ETA 00:07:05
+# Fork: 2 of 3
+# Warmup Iteration   1: 56162,044 ops/s
+# Warmup Iteration   2: 117111,690 ops/s
+# Warmup Iteration   3: 117254,048 ops/s
+Iteration   1: 117056,701 ops/s
+Iteration   2: 116579,873 ops/s
+Iteration   3: 115953,839 ops/s
+
+# Run progress: 13,33% complete, ETA 00:06:34
+# Fork: 3 of 3
+# Warmup Iteration   1: 58492,363 ops/s
+# Warmup Iteration   2: 118842,437 ops/s
+# Warmup Iteration   3: 119580,583 ops/s
+Iteration   1: 119041,362 ops/s
+Iteration   2: 120317,226 ops/s
+Iteration   3: 119798,669 ops/s
+
+
+Result "net.sourceforge.pmd.MyBenchmark.testChildrenClassThenFirst":
+  118249,169 ±(99.9%) 2455,915 ops/s [Average]
+  (min, avg, max) = (115953,839, 118249,169, 120317,226), stdev = 1461,476
+  CI (99.9%): [115793,254, 120705,084] (assumes normal distribution)
+
+
+# JMH version: 1.21
+# VM version: JDK 10.0.2, Java HotSpot(TM) 64-Bit Server VM, 10.0.2+13
+# VM invoker: /usr/lib/jvm/java-10-oracle/bin/java
+# VM options: <none>
+# Warmup: 3 iterations, 5 s each
+# Measurement: 3 iterations, 5 s each
+# Timeout: 15 s per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: net.sourceforge.pmd.MyBenchmark.testChildrenThenFirst
+# Parameters: (sourceFname = /PLSQLParser.java)
+
+# Run progress: 20,00% complete, ETA 00:06:04
+# Fork: 1 of 3
+# Warmup Iteration   1: 54999,588 ops/s
+# Warmup Iteration   2: 116990,941 ops/s
+# Warmup Iteration   3: 119195,565 ops/s
+Iteration   1: 119358,587 ops/s
+Iteration   2: 119345,404 ops/s
+Iteration   3: 118967,492 ops/s
+
+# Run progress: 26,67% complete, ETA 00:05:34
+# Fork: 2 of 3
+# Warmup Iteration   1: 57655,312 ops/s
+# Warmup Iteration   2: 117947,317 ops/s
+# Warmup Iteration   3: 118759,842 ops/s
+Iteration   1: 120105,298 ops/s
+Iteration   2: 117267,168 ops/s
+Iteration   3: 118119,742 ops/s
+
+# Run progress: 33,33% complete, ETA 00:05:03
+# Fork: 3 of 3
+# Warmup Iteration   1: 56435,759 ops/s
+# Warmup Iteration   2: 117212,326 ops/s
+# Warmup Iteration   3: 118469,136 ops/s
+Iteration   1: 117228,146 ops/s
+Iteration   2: 117496,906 ops/s
+Iteration   3: 117914,223 ops/s
+
+
+Result "net.sourceforge.pmd.MyBenchmark.testChildrenThenFirst":
+  118422,552 ±(99.9%) 1764,941 ops/s [Average]
+  (min, avg, max) = (117228,146, 118422,552, 120105,298), stdev = 1050,288
+  CI (99.9%): [116657,611, 120187,493] (assumes normal distribution)
+
+
+# JMH version: 1.21
+# VM version: JDK 10.0.2, Java HotSpot(TM) 64-Bit Server VM, 10.0.2+13
+# VM invoker: /usr/lib/jvm/java-10-oracle/bin/java
+# VM options: <none>
+# Warmup: 3 iterations, 5 s each
+# Measurement: 3 iterations, 5 s each
+# Timeout: 15 s per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: net.sourceforge.pmd.MyBenchmark.testDescendantsThenFirst
+# Parameters: (sourceFname = /PLSQLParser.java)
+
+# Run progress: 40,00% complete, ETA 00:04:33
+# Fork: 1 of 3
+# Warmup Iteration   1: 0,072 ops/s
+# Warmup Iteration   2: 73527,334 ops/s
+# Warmup Iteration   3: 79004,695 ops/s
+Iteration   1: 79277,995 ops/s
+Iteration   2: 79347,436 ops/s
+Iteration   3: 78900,239 ops/s
+
+# Run progress: 46,67% complete, ETA 00:04:13
+# Fork: 2 of 3
+# Warmup Iteration   1: 0,073 ops/s
+# Warmup Iteration   2: 73665,345 ops/s
+# Warmup Iteration   3: 78421,055 ops/s
+Iteration   1: 78996,044 ops/s
+Iteration   2: 79629,256 ops/s
+Iteration   3: 78569,714 ops/s
+
+# Run progress: 53,33% complete, ETA 00:03:48
+# Fork: 3 of 3
+# Warmup Iteration   1: 0,073 ops/s
+# Warmup Iteration   2: 72545,454 ops/s
+# Warmup Iteration   3: 77445,093 ops/s
+Iteration   1: 77823,689 ops/s
+Iteration   2: 78392,064 ops/s
+Iteration   3: 78169,903 ops/s
+
+
+Result "net.sourceforge.pmd.MyBenchmark.testDescendantsThenFirst":
+  78789,593 ±(99.9%) 999,998 ops/s [Average]
+  (min, avg, max) = (77823,689, 78789,593, 79629,256), stdev = 595,083
+  CI (99.9%): [77789,595, 79789,591] (assumes normal distribution)
+
+
+# JMH version: 1.21
+# VM version: JDK 10.0.2, Java HotSpot(TM) 64-Bit Server VM, 10.0.2+13
+# VM invoker: /usr/lib/jvm/java-10-oracle/bin/java
+# VM options: <none>
+# Warmup: 3 iterations, 5 s each
+# Measurement: 3 iterations, 5 s each
+# Timeout: 15 s per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: net.sourceforge.pmd.MyBenchmark.testGetFirstChildOfType
+# Parameters: (sourceFname = /PLSQLParser.java)
+
+# Run progress: 60,00% complete, ETA 00:03:19
+# Fork: 1 of 3
+# Warmup Iteration   1: 43489,141 ops/s
+# Warmup Iteration   2: 102008,946 ops/s
+# Warmup Iteration   3: 113716,147 ops/s
+Iteration   1: 113858,625 ops/s
+Iteration   2: 116208,360 ops/s
+Iteration   3: 116425,468 ops/s
+
+# Run progress: 66,67% complete, ETA 00:02:45
+# Fork: 2 of 3
+# Warmup Iteration   1: 53671,964 ops/s
+# Warmup Iteration   2: 117427,828 ops/s
+# Warmup Iteration   3: 114051,690 ops/s
+Iteration   1: 117689,078 ops/s
+Iteration   2: 119171,267 ops/s
+Iteration   3: 118964,954 ops/s
+
+# Run progress: 73,33% complete, ETA 00:02:11
+# Fork: 3 of 3
+# Warmup Iteration   1: 52180,265 ops/s
+# Warmup Iteration   2: 115180,147 ops/s
+# Warmup Iteration   3: 117156,388 ops/s
+Iteration   1: 116753,083 ops/s
+Iteration   2: 116965,717 ops/s
+Iteration   3: 117465,502 ops/s
+
+
+Result "net.sourceforge.pmd.MyBenchmark.testGetFirstChildOfType":
+  117055,784 ±(99.9%) 2665,366 ops/s [Average]
+  (min, avg, max) = (113858,625, 117055,784, 119171,267), stdev = 1586,116
+  CI (99.9%): [114390,418, 119721,149] (assumes normal distribution)
+
+
+# JMH version: 1.21
+# VM version: JDK 10.0.2, Java HotSpot(TM) 64-Bit Server VM, 10.0.2+13
+# VM invoker: /usr/lib/jvm/java-10-oracle/bin/java
+# VM options: <none>
+# Warmup: 3 iterations, 5 s each
+# Measurement: 3 iterations, 5 s each
+# Timeout: 15 s per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: net.sourceforge.pmd.MyBenchmark.testGetFirstDescendantOfType
+# Parameters: (sourceFname = /PLSQLParser.java)
+
+# Run progress: 80,00% complete, ETA 00:01:37
+# Fork: 1 of 3
+# Warmup Iteration   1: 0,071 ops/s
+# Warmup Iteration   2: 81983,560 ops/s
+# Warmup Iteration   3: 87671,588 ops/s
+Iteration   1: 88742,077 ops/s
+Iteration   2: 87404,047 ops/s
+Iteration   3: 87782,177 ops/s
+
+# Run progress: 86,67% complete, ETA 00:01:06
+# Fork: 2 of 3
+# Warmup Iteration   1: 0,071 ops/s
+# Warmup Iteration   2: 81240,774 ops/s
+# Warmup Iteration   3: 88233,849 ops/s
+Iteration   1: 88086,389 ops/s
+Iteration   2: 84785,941 ops/s
+Iteration   3: 88211,955 ops/s
+
+# Run progress: 93,33% complete, ETA 00:00:33
+# Fork: 3 of 3
+# Warmup Iteration   1: 0,070 ops/s
+# Warmup Iteration   2: 83011,316 ops/s
+# Warmup Iteration   3: 88484,409 ops/s
+Iteration   1: 89658,112 ops/s
+Iteration   2: 90118,518 ops/s
+Iteration   3: 89824,076 ops/s
+
+
+Result "net.sourceforge.pmd.MyBenchmark.testGetFirstDescendantOfType":
+  88290,366 ±(99.9%) 2731,789 ops/s [Average]
+  (min, avg, max) = (84785,941, 88290,366, 90118,518), stdev = 1625,644
+  CI (99.9%): [85558,577, 91022,155] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:08:29
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+Benchmark                                     (sourceFname)   Mode  Cnt       Score      Error  Units
+MyBenchmark.testChildrenClassThenFirst    /PLSQLParser.java  thrpt    9  118249,169 ± 2455,915  ops/s
+MyBenchmark.testChildrenThenFirst         /PLSQLParser.java  thrpt    9  118422,552 ± 1764,941  ops/s
+MyBenchmark.testDescendantsThenFirst      /PLSQLParser.java  thrpt    9   78789,593 ±  999,998  ops/s
+MyBenchmark.testGetFirstChildOfType       /PLSQLParser.java  thrpt    9  117055,784 ± 2665,366  ops/s
+MyBenchmark.testGetFirstDescendantOfType  /PLSQLParser.java  thrpt    9   88290,366 ± 2731,789  ops/s
