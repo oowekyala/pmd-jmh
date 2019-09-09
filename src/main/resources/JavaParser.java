@@ -2,6 +2,7 @@
 
 package net.sourceforge.pmd.lang.java.ast;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14217,4 +14218,652 @@ FloatingPointType:
         JJCalls next;
     }
 
+}
+
+/**
+ * BSD-style license; for more info see http://pmd.sourceforge.net/license.html
+ */
+
+/*
+ * This file is to test the JavaCC java grammer, whether we can parse specific java constructs without
+ * throwing a syntax error.
+ */
+
+class Superclass {
+
+    public Superclass() {
+    }
+
+    public <V> Superclass(Class<V> clazz) {
+    }
+
+    <T> T doStuff(T s) {
+        return s;
+    }
+}
+
+class Outer {
+
+    Outer() {
+        System.out.println("Outer constructor");
+    }
+
+    class Inner {
+
+        Inner() {
+            System.out.println("Inner constructor");
+        }
+    }
+}
+
+class Child extends Outer.Inner {
+
+    Child(Outer o) {
+        o.super();
+        System.out.println("Child constructor");
+    }
+}
+
+public class ParserCornerCases extends Superclass {
+
+    public ParserCornerCases() {
+        super();
+    }
+
+    public ParserCornerCases(int a) {
+        <Integer>this(a, 2);
+    }
+
+    public <W> ParserCornerCases(int a, int b) {
+        <String>super(String.class);
+    }
+
+    public ParserCornerCases(String title) {
+        this();
+    }
+
+    public strictfp void testGeneric() {
+        String o = super.<String>doStuff("foo");
+        String v = this.<String>thisGeneric("bar");
+    }
+
+    <X> X thisGeneric(X x) {
+        return x;
+    }
+
+    Class getByteArrayClass() {
+        return (byte[].class);
+    }
+
+    public void bitwiseOperator() {
+        if ((modifiers & InputEvent.SHIFT_DOWN_MASK) != 0) {
+            buf.append("shift ");
+        }
+    }
+}
+
+/**
+ * Test case from http://jira.codehaus.org/browse/MPMD-126
+ */
+class PmdTestParent {
+
+    public PmdTestParent(Object obj) {}
+}
+
+class PmdTestChild extends PmdTestParent {
+
+    public PmdTestChild() {
+        // the following line produced a parsing problem
+        super(new Object() {
+
+            public Object create() {
+
+                Object memoryMonitor = null;
+
+                if (memoryMonitor == null) {
+                    memoryMonitor = new Object();
+                }
+
+                return memoryMonitor;
+            }
+        });
+    }
+}
+
+/*
+ * Test cases for bug #1020 Parsing Error
+ */
+class SimpleBean {
+
+    String name;
+}
+
+class SimpleBeanUser {
+
+    SimpleBeanUser(SimpleBean o) {
+
+    }
+
+    SimpleBeanUser() {
+        this(new SimpleBean() {{
+            name = "test";
+        }});
+    }
+}
+
+class SimpleBeanUser2 extends SimpleBeanUser {
+
+    SimpleBeanUser2() {
+        super(new SimpleBean() {{
+            name = "test2";
+        }});
+    }
+}
+
+/*
+ * Test case for bug #1007 Parse Exception with annotation
+ */
+class TestParseAnnototation {
+
+    void parse() {
+        for (@SuppressWarnings("unchecked") int i = 0; i < 10; i++) {
+        }
+        for (@SuppressWarnings("unchecked") Iterator it = Fachabteilung.values().iterator(); it.hasNext(); ) {
+        }
+        List<String> l = new ArrayList<String>();
+        for (@SuppressWarnings("unchecked") String s : l) {
+        }
+    }
+}
+
+/*
+ * Test case for bug #956 PMD Parse Exception
+ */
+class FooBlock {}
+
+class MyFoo {
+
+    MyFoo(FooBlock b) {
+    }
+}
+
+class Foo extends MyFoo {
+
+    public Foo() {
+        super(new FooBlock() {
+            public Object valueOf(Object object) {
+                String fish = "salmon";
+                return fish;
+            }
+        });
+    }
+}
+
+/*
+ * Verifies #1122 parse error at class.super
+ */
+class SuperTest {
+
+    /**
+     * @throws UnsupportedOperationException
+     */
+    public Iterator<E> iterator() {
+        if (this.mods.contains(Modification.Iterator)) {
+            return new Iterator<E>() {
+                Iterator<E> wrapped = ImmutableSet.super.iterator();
+
+                public boolean hasNext() {
+                    return this.wrapped.hasNext();
+                }
+
+                public E next() {
+                    return this.wrapped.next();
+                }
+
+                public void remove() {
+                    if (ImmutableSet.this.mods.contains(Modification.RemoveIter)) {
+                        this.wrapped.remove();
+                    }
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+        throw new UnsupportedOperationException();
+    }
+}
+
+/*
+ * Test case for #1310 PMD cannot parse int.class
+ */
+class ClazzPropertyOfPrimitiveTypes {
+
+    public void test() {
+        Class<?> c = int.class;
+        c = short.class;
+        c = long.class;
+        c = float.class;
+        c = double.class;
+        c = char.class;
+        c = byte.class;
+        c = void.class;
+
+        if (c == int.class || c == short.class || c == long.class || c == double.class || c == char.class
+            || c == byte.class || c == void.class) {
+
+        }
+
+        if ("a".equals((int.class).getName())) {
+
+        }
+
+        if ((Integer.class.equals(clazz)) || (int.class.equals(clazz))) {
+        }
+    }
+}
+
+/**
+ * Java 8 language syntax
+ *
+ * @see <a href="http://cr.openjdk.java.net/~briangoetz/lambda/lambda-state-final.html">State of the Lambda</a>
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">java.util.function</a>
+ */
+public class ParserCornerCases18 {
+
+    public void lambdas() {
+        FileFilter java = (File f) -> f.getName().endsWith(".java");
+        FileFilter java2 = f -> f.getName().endsWith(".java");
+        FileFilter java3 = (f) -> f.getName().endsWith(".java");
+        FileFilter java4 = (f -> f.getName().endsWith(".java"));
+        IntStream.range(0, array.length).parallel().forEach(i -> { array[i] = generator.apply(i); });
+
+
+        FileFilter[] filters = new FileFilter[] {
+            f -> f.exists(), f -> f.canRead(), f -> f.getName().startsWith("q")
+        };
+        filterFiles(new FileFilter[] {
+            f -> f.exists(), f -> f.canRead(), f -> f.getName().startsWith("q")
+        });
+
+        String user = doPrivileged(() -> System.getProperty("user.name"));
+
+        Callable<String> c = () -> "done";
+        Runnable r = () -> { System.out.println("done"); };
+        Supplier<Runnable> sup = () -> () -> { System.out.println("hi"); };
+        boolean flag = 1 > 2;
+        Callable<Integer> c2 = flag ? (() -> 23) : (() -> 42);
+        Object o = (Runnable) () -> { System.out.println("hi"); };
+        new ParserCornerCases18().r1.run();
+
+        Comparator<String> comparer = (s1, s2) -> s1.compareToIgnoreCase(s2);
+        comparer = (s1, s2) -> s1.compareToIgnoreCase(s2);
+
+        Button button = new Button();
+        button.addActionListener(e -> System.out.println(e.getModifiers()));
+
+        // grammar/parser: don't get confused with this...
+        int initialSizeGlobal = (int) (profilingContext.m_profileItems.size() * (150.0 * 0.30));
+
+        BiConsumer<String, Integer> lambda2 = (String s, Integer i) -> { i++; };
+        BiConsumer<String, Integer> lambda2a = (s, i) -> { i++; };
+        TriConsumer<String, Integer, Double> lambda3 = (String s, Integer i, Double d) -> { d += i; };
+        TriConsumer<String, Integer, Double> lambda3a = (s, i, d) -> { d += i; };
+    }
+
+    @FunctionalInterface
+    public interface TriConsumer<A, B, C> {
+
+        void accept(A a, B b, C c);
+    }
+
+    Runnable r1 = () -> { System.out.println(this); };
+
+    public Runnable toDoLater() {
+        return () -> {
+            System.out.println("later");
+        };
+    }
+
+    private String doPrivileged(PrivilegedAction<String> action) {
+        return action.run();
+    }
+
+    private void filterFiles(FileFilter[] filters) {
+    }
+
+    /* Example from java.util.Comparator. */
+    public static <K extends Comparable<? super K>, V> Comparator<Map.Entry<K, V>> comparingByKey() {
+        // intersection types in cast
+        return (Comparator<Map.Entry<K, V>> & Serializable)
+            (c1, c2) -> c1.getKey().compareTo(c2.getKey());
+    }
+
+    /* TODO: This construct can't be parsed. Either the cast expression is not detected, or the following Lambda Expression.
+    /* Example from java.time.chrono.AbstractChronology */
+    //    static final Comparator<ChronoLocalDateTime<? extends ChronoLocalDate>> DATE_TIME_ORDER =
+    //            (Comparator<ChronoLocalDateTime<? extends ChronoLocalDate>> & Serializable) (dateTime1, dateTime2) -> {
+    //                int cmp = Long.compare(dateTime1.toLocalDate().toEpochDay(), dateTime2.toLocalDate().toEpochDay());
+    //                if (cmp == 0) {
+    //                    cmp = Long.compare(dateTime1.toLocalTime().toNanoOfDay(), dateTime2.toLocalTime().toNanoOfDay());
+    //                }
+    //                return cmp;
+    //            };
+
+    public void methodReferences() {
+        Runnable r = new ParserCornerCases18()::toDoLater;
+        Runnable r1 = this::toDoLater;
+        ParserCornerCases18 pc = new ParserCornerCases18();
+        Runnable r11 = pc::toDoLater;
+        Supplier<String> s = super::toString;
+        Runnable r2 = ParserCornerCases18::staticMethod;
+
+        IntFunction<int[]> arrayMaker = int[]::new;
+        int[] array = arrayMaker.apply(10);  // creates an int[10]
+    }
+
+    // https://sourceforge.net/p/pmd/bugs/1173/
+    public static class PmdMethodReferenceTest {
+
+        Function<Integer, Integer> theFunction;
+
+        public PmdTest() {
+            theFunction = this::foo;
+        }
+
+        private int foo(int i) {
+            return i;
+        }
+    }
+
+    public static Runnable staticMethod() {
+        return () -> System.out.println("run");
+    }
+
+    public void typeAnnotations() {
+        String myString = (@NonNull String) str;
+        Object o = new @Interned MyObject();
+    }
+
+    class UnmodifiableList<T> implements @Readonly List<@Readonly T> {}
+
+    void monitorTemperature() throws @Critical TemperatureException {}
+
+    // https://sourceforge.net/p/pmd/bugs/1205/
+    public static class X {
+
+        public void lambaWithIf() {
+            Stream.of(1, 2, 3)
+                  .sorted((a, b) -> {
+                      int x = a.hashCode() - b.hashCode();
+                      if (a.equals(new X()))
+                          x = 1;
+                      return x;
+                  })
+                  .count();
+        }
+
+        public void lambaWithIf2() {
+            Stream.of(1, 2, 3)
+                  .sorted((Integer a, Integer b) -> {
+                      int x = a.hashCode() - b.hashCode();
+                      if (a.equals(new X()))
+                          x = 1;
+                      return x;
+                  })
+                  .count();
+        }
+
+        // https://sourceforge.net/p/pmd/bugs/1258/
+        public void lambdaWithPropertyAssignment() {
+            object.event = () -> {
+                Request request = new Request();
+                request.id = 42;
+                //                request.setId(42);
+            };
+        }
+    }
+
+    public List<@AnnotatedUsage ?> testWildCardWithAnnotation() {
+        return null;
+    }
+
+    public Object @Nullable [] testAnnotationsToArrayElements() {
+        return null;
+    }
+
+    private byte @Nullable [] getBytes() {
+        return null;
+    }
+
+    public static <T extends @NonNull Enum<?>> T getEnum() {
+        return null;
+    }
+
+    public static <T> @Nullable T getNullableEnum() {
+        return null;
+    }
+
+    public Object[] createNonNullArray() {
+        return new Object@NonNull[0];
+    }
+
+    private static void testMultiDimArrayWithAnnotations() {
+        // ever used a 3D-Array in java??
+        Object x = new Object@NonNull[2]@Nullable[1]@NonNull[3];
+    }
+
+
+    /**
+     * Explicit receiver Parameters
+     * see: http://blog.joda.org/2015/12/explicit-receiver-parameters.html
+     * and: https://sourceforge.net/p/pmd/bugs/1455/
+     */
+    public void methodWithReceiverParameter(ParserCornerCases18 this) { }
+
+    public void methodWithReceiverAndOtherParameters(ParserCornerCases18 this, String other) { }
+
+    public void methodWithReceiverParameterWithAnnotation(@AnnotatedUsage ParserCornerCases18 this, String other) { }
+
+    @Target(ElementType.TYPE_USE)
+    public @interface AnnotatedUsage {}
+
+    class Inner {
+
+        Inner(ParserCornerCases18 ParserCornerCases18.this) {}
+    }
+}
+
+interface DefaultIterator<E> {
+
+    boolean hasNext();
+
+
+    E next();
+
+
+    void remove();
+
+
+    default void skip(int i) {
+        for (; i > 0 && hasNext(); i--) next();
+    }
+
+
+    static void staticInterfaceMethods() {
+        System.out.println("");
+    }
+}
+
+/*
+ * This file is to test the JavaCC java grammer, whether we can parse specific java constructs without
+ * throwing a syntax error.
+ *
+ * Java 7, see: http://docs.oracle.com/javase/7/docs/technotes/guides/language/enhancements.html#javase7
+ */
+public class ParserCornerCases17 {
+
+    public ParserCornerCases17() {
+        super();
+    }
+
+    public void binaryLiterals() {
+        // An 8-bit 'byte' value:
+        byte aByte = (byte) 0b00100001;
+
+        // A 16-bit 'short' value:
+        short aShort = (short) 0b1010000101000101;
+
+        // Some 32-bit 'int' values:
+        int anInt1 = 0b10100001010001011010000101000101;
+        int anInt2 = 0b101;
+        int anInt3 = 0B101; // The B can be upper or lower case.
+
+        // A 64-bit 'long' value. Note the "L" suffix:
+        long aLong = 0b1010000101000101101000010100010110100001010001011010000101000101L;
+
+        int[] phases = {
+            0b00110001,
+            0b01100010,
+            0b11000100,
+            0b10001001,
+            0b00010011,
+            0b00100110,
+            0b01001100,
+            0b10011000
+        };
+
+        int instruction = 0;
+        if ((instruction & 0b11100000) == 0b00000000) {
+            final int register = instruction & 0b00001111;
+            switch (instruction & 0b11110000) {
+            case 0b00000000:
+                break;
+            case 0b00010000:
+                break;
+            case 0b00100000:
+                break;
+            case 0b00110000:
+                break;
+            case 0b01000000:
+                break;
+            case 0b01010000:
+                break;
+            case 0b01100000:
+                break;
+            case 0b01110000:
+                break;
+            default:
+                throw new IllegalArgumentException();
+            }
+        }
+    }
+
+    public void underscoreInNumericLiterals() {
+        long creditCardNumber = 1234_5678_9012_3456L;
+        long socialSecurityNumber = 999_99_9999L;
+        float pi = 3.14_15F;
+        long hexBytes = 0xFF_EC_DE_5E;
+        long hexWords = 0xCAFE_BABE;
+        long maxLong = 0x7fff_ffff_ffff_ffffL;
+        byte nybbles = 0b0010_0101;
+        long bytes = 0b11010010_01101001_10010100_10010010;
+
+        int _52 = 1;
+        int x1 = _52;              // This is an identifier, not a numeric literal
+        int x2 = 5_2;              // OK (decimal literal)
+        int x4 = 5_______2;        // OK (decimal literal)
+        int x7 = 0x5_2;            // OK (hexadecimal literal)
+        int x9 = 0_52;             // OK (octal literal)
+        int x10 = 05_2;            // OK (octal literal)
+    }
+
+    public String stringsInSwitchStatements() {
+        String dayOfWeekArg = "Wednesday";
+        String typeOfDay;
+        switch (dayOfWeekArg) {
+        case "Monday":
+            typeOfDay = "Start of work week";
+            break;
+        case "Tuesday":
+        case "Wednesday":
+        case "Thursday":
+            typeOfDay = "Midweek";
+            break;
+        case "Friday":
+            typeOfDay = "End of work week";
+            break;
+        case "Saturday":
+        case "Sunday":
+            typeOfDay = "Weekend";
+            break;
+        default:
+            throw new IllegalArgumentException("Invalid day of the week: " + dayOfWeekArg);
+        }
+        return typeOfDay;
+    }
+
+    class MyClass<X> {
+
+        <T> MyClass(T t) {
+        }
+    }
+
+    public void typeInferenceForGenericInstanceCreation() {
+        Map<String, List<String>> myMap = new HashMap<>();
+
+        List<String> list = new ArrayList<>();
+        list.add("A");
+        List<? extends String> list2 = new ArrayList<>();
+        list.addAll(list2);
+
+        MyClass<Integer> myObject = new MyClass<>("");
+    }
+
+    public void theTryWithResourcesStatement() throws IOException {
+        String path = "/foo";
+        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+            String first = br.readLine();
+        }
+
+        // Two resources declared
+        String outputFileName = "/foo-out";
+        String zipFileName = "/foo.zip";
+        java.nio.charset.Charset charset = java.nio.charset.Charset.forName("US-ASCII");
+        java.nio.file.Path outputFilePath = java.nio.file.Paths.get(outputFileName);
+
+        // Open zip file and create output file with try-with-resources statement
+        try (
+            java.util.zip.ZipFile zf = new java.util.zip.ZipFile(zipFileName);
+            java.io.BufferedWriter writer = java.nio.file.Files.newBufferedWriter(outputFilePath, charset)
+        ) {
+
+            // Enumerate each entry
+
+            for (Enumeration<? extends ZipEntry> entries = zf.entries(); entries.hasMoreElements(); ) {
+
+                // Get the entry name and write it to the output file
+
+                String newLine = System.getProperty("line.separator");
+                String zipEntryName = ((java.util.zip.ZipEntry) entries.nextElement()).getName() + newLine;
+                writer.write(zipEntryName, 0, zipEntryName.length());
+            }
+        }
+    }
+
+    public void catchingMultipleExceptionTypes() throws IOException, SQLException {
+        try {
+            if (new File("foo").createNewFile()) {
+                throw new SQLException();
+            }
+
+        } catch (IOException | SQLException ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
+    }
+
+    // With java 8 lambda grammar enhancement, this caused a problem, to not be identified as lambda...
+    public void expressionInCastExpression() {
+        // grammar/parser: don't get confused with this...
+        int initialSizeGlobal = (int) (profilingContext.m_profileItems.size() * (150.0 * 0.30));
+    }
 }

@@ -37,10 +37,13 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
@@ -48,31 +51,82 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.annotations.Timeout;
+import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
 import net.sourceforge.pmd.lang.LanguageRegistry;
 import net.sourceforge.pmd.lang.LanguageVersionHandler;
 import net.sourceforge.pmd.lang.Parser;
 import net.sourceforge.pmd.lang.ast.Node;
+import net.sourceforge.pmd.lang.ast.NodeStream;
+import net.sourceforge.pmd.lang.ast.internal.DescendantOrSelfIterator;
+import net.sourceforge.pmd.lang.java.ast.ASTAnnotation;
 import net.sourceforge.pmd.lang.java.ast.ASTBreakStatement;
 
 
 @BenchmarkMode(Mode.Throughput)
+@Fork(value = 3)
+@Measurement(time = 5, iterations = 3)
+@Warmup(time = 5, iterations = 2)
 @OutputTimeUnit(TimeUnit.SECONDS)
+@Timeout(time = 15)
 public class MyBenchmark {
 
 
-    @Benchmark
-    public void testStream(ParserState state, Blackhole blackhole) {
-        state.bench(node -> node.descendants(ASTBreakStatement.class).first().ifPresent(blackhole::consume));
+    public static void main(String[] args) throws IOException {
+        ParserState state = new ParserState();
+        state.sourceFname = "/PLSQLParser.java";
+        state.setup();
+
+        Blackhole blackhole = new Blackhole("Today's password is swordfish. I understand instantiating Blackholes directly is dangerous.");
+        for (int i = 0; i < 2; i++) {
+            blackhole.consume(state.acu.descendants(ASTBreakStatement.class).first());
+        }
+
     }
 
 
+//    @Benchmark
+//    public static void testOpt(ParserState state, Blackhole blackhole) {
+//        state.bench(node -> descendantsByOptConcat(node).forEach(blackhole::consume));
+//    }
+//
+//
+//    @Benchmark
+//    public static void testIter(ParserState state, Blackhole blackhole) {
+//        state.bench(node -> descendantsByIter(node).forEach(blackhole::consume));
+//    }
+
+    //
+    //    @Benchmark
+    //    public static void testConcat(ParserState state, Blackhole blackhole) {
+    //        state.bench(node -> descendantsByConcat(node).forEach(blackhole::consume));
+    //    }
+
+    //        @Benchmark
+    //        public static void testFlatmap(ParserState state, Blackhole blackhole) {
+    //            state.bench(node -> descendantsByFlatmap(node).forEach(blackhole::consume));
+    //        }
+    //
+    //
+    //    @Benchmark
+    //    public static void testStream(ParserState state, Blackhole blackhole) {
+    //        state.bench(node -> node.descendants(ASTBreakStatement.class).first().ifPresent(blackhole::consume));
+    //    }
+
+
     @Benchmark
-    public void testOldApproach(ParserState state, Blackhole blackhole) {
-        state.bench(node -> blackhole.consume(node.getFirstDescendantOfType(ASTBreakStatement.class)));
+    public static void testNewImpl(ParserState state, Blackhole blackhole) {
+        state.bench(node -> blackhole.consume(node.descendants(ASTAnnotation.class).first()));
     }
 
+//
+//    @Benchmark
+//    public static void testGetFirstDescendantOfType(ParserState state, Blackhole blackhole) {
+//        state.bench(node -> blackhole.consume(node.getFirstDescendantOfType(ASTAnnotation.class)));
+//    }
+//
 
     @State(Scope.Benchmark)
     public static class ParserState {
@@ -80,8 +134,9 @@ public class MyBenchmark {
         Parser newParser;
         private Reader source;
 
-        @Param( {"/JavaParser.java"})
-        private String sourceFname;
+        @Param({"/PLSQLParser.java"})
+        String sourceFname;
+        private Node acu;
 
         @Setup
         public void setup() throws IOException {
@@ -97,9 +152,12 @@ public class MyBenchmark {
             streamReader.close();
         }
 
-        public void bench(Consumer<Node> blackhole) {
-            Node acu = newParser.parse(sourceFname, source);
-            blackhole.accept(acu);
+
+        public void bench(Consumer<Node> consumer) {
+            acu = newParser.parse(sourceFname, source);
+            for (int i = 0; i < 1000; i++) {
+                consumer.accept(acu);
+            }
         }
 
 
