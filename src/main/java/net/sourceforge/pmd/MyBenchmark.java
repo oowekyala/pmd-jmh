@@ -37,7 +37,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -59,8 +58,6 @@ import net.sourceforge.pmd.lang.LanguageRegistry;
 import net.sourceforge.pmd.lang.LanguageVersionHandler;
 import net.sourceforge.pmd.lang.Parser;
 import net.sourceforge.pmd.lang.ast.Node;
-import net.sourceforge.pmd.lang.ast.NodeStream;
-import net.sourceforge.pmd.lang.ast.internal.DescendantOrSelfIterator;
 import net.sourceforge.pmd.lang.java.ast.ASTAnnotation;
 import net.sourceforge.pmd.lang.java.ast.ASTBreakStatement;
 
@@ -68,23 +65,10 @@ import net.sourceforge.pmd.lang.java.ast.ASTBreakStatement;
 @BenchmarkMode(Mode.Throughput)
 @Fork(value = 3)
 @Measurement(time = 5, iterations = 3)
-@Warmup(time = 5, iterations = 2)
+@Warmup(time = 5, iterations = 3)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Timeout(time = 15)
 public class MyBenchmark {
-
-
-    public static void main(String[] args) throws IOException {
-        ParserState state = new ParserState();
-        state.sourceFname = "/PLSQLParser.java";
-        state.setup();
-
-        Blackhole blackhole = new Blackhole("Today's password is swordfish. I understand instantiating Blackholes directly is dangerous.");
-        for (int i = 0; i < 2; i++) {
-            blackhole.consume(state.acu.descendants(ASTBreakStatement.class).first());
-        }
-
-    }
 
 
 //    @Benchmark
@@ -117,16 +101,34 @@ public class MyBenchmark {
 
 
     @Benchmark
-    public static void testNewImpl(ParserState state, Blackhole blackhole) {
-        state.bench(node -> blackhole.consume(node.descendants(ASTAnnotation.class).first()));
+    public static void testDescendantsThenFirst(ParserState state, Blackhole blackhole) {
+        state.bench(1000, node -> blackhole.consume(node.descendants(ASTAnnotation.class).first()));
     }
 
-//
-//    @Benchmark
-//    public static void testGetFirstDescendantOfType(ParserState state, Blackhole blackhole) {
-//        state.bench(node -> blackhole.consume(node.getFirstDescendantOfType(ASTAnnotation.class)));
-//    }
-//
+
+    @Benchmark
+    public static void testGetFirstDescendantOfType(ParserState state, Blackhole blackhole) {
+        state.bench(1000, node -> blackhole.consume(node.getFirstDescendantOfType(ASTAnnotation.class)));
+    }
+
+
+    @Benchmark
+    public static void testChildrenThenFirst(ParserState state, Blackhole blackhole) {
+        state.bench(1, node -> node.descendants().forEach(it -> blackhole.consume(node.children().first(ASTBreakStatement.class))));
+    }
+
+
+    @Benchmark
+    public static void testChildrenClassThenFirst(ParserState state, Blackhole blackhole) {
+        state.bench(1, node -> node.descendants().forEach(it -> blackhole.consume(node.children(ASTBreakStatement.class).first())));
+    }
+
+
+    @Benchmark
+    public static void testGetFirstChildOfType(ParserState state, Blackhole blackhole) {
+        state.bench(1, node -> node.descendants().forEach(it -> blackhole.consume(node.getFirstChildOfType(ASTBreakStatement.class))));
+    }
+
 
     @State(Scope.Benchmark)
     public static class ParserState {
@@ -153,9 +155,9 @@ public class MyBenchmark {
         }
 
 
-        public void bench(Consumer<Node> consumer) {
+        public void bench(int iter, Consumer<Node> consumer) {
             acu = newParser.parse(sourceFname, source);
-            for (int i = 0; i < 1000; i++) {
+            for (int i = 0; i < iter; i++) {
                 consumer.accept(acu);
             }
         }
