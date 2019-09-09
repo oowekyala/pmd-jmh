@@ -58,6 +58,7 @@ import net.sourceforge.pmd.lang.LanguageRegistry;
 import net.sourceforge.pmd.lang.LanguageVersionHandler;
 import net.sourceforge.pmd.lang.Parser;
 import net.sourceforge.pmd.lang.ast.Node;
+import net.sourceforge.pmd.lang.ast.internal.TraversalUtils;
 import net.sourceforge.pmd.lang.java.ast.ASTAnnotation;
 import net.sourceforge.pmd.lang.java.ast.ASTBreakStatement;
 
@@ -69,7 +70,6 @@ import net.sourceforge.pmd.lang.java.ast.ASTBreakStatement;
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Timeout(time = 15)
 public class MyBenchmark {
-
 
 //    @Benchmark
 //    public static void testOpt(ParserState state, Blackhole blackhole) {
@@ -108,7 +108,7 @@ public class MyBenchmark {
 
     @Benchmark
     public static void testGetFirstDescendantOfType(ParserState state, Blackhole blackhole) {
-        state.bench(1000, node -> blackhole.consume(node.getFirstDescendantOfType(ASTAnnotation.class)));
+        state.bench(1000, node -> blackhole.consume(TraversalUtils.getFirstDescendantOfType(ASTAnnotation.class, node)));
     }
 
 
@@ -126,7 +126,7 @@ public class MyBenchmark {
 
     @Benchmark
     public static void testGetFirstChildOfType(ParserState state, Blackhole blackhole) {
-        state.bench(1, node -> node.descendants().forEach(it -> blackhole.consume(node.getFirstChildOfType(ASTBreakStatement.class))));
+        state.bench(1, node -> node.descendants().forEach(it -> blackhole.consume(TraversalUtils.getFirstChildOfType(ASTBreakStatement.class, node))));
     }
 
 
