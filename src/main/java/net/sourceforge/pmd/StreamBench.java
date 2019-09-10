@@ -35,8 +35,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.function.BiFunction;
 
 import org.apache.commons.io.IOUtils;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -53,80 +54,77 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Timeout;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import net.sourceforge.pmd.lang.LanguageRegistry;
 import net.sourceforge.pmd.lang.LanguageVersionHandler;
 import net.sourceforge.pmd.lang.Parser;
 import net.sourceforge.pmd.lang.ast.Node;
-import net.sourceforge.pmd.lang.ast.internal.TraversalUtils;
 import net.sourceforge.pmd.lang.java.ast.ASTAnnotation;
 import net.sourceforge.pmd.lang.java.ast.ASTBreakStatement;
+import net.sourceforge.pmd.lang.java.ast.ASTMethodDeclaration;
 
 
 @BenchmarkMode(Mode.Throughput)
-@Fork(value = 3)
-@Measurement(time = 5, iterations = 3)
-@Warmup(time = 5, iterations = 3)
+@Fork(value = 1)
+@Measurement(iterations = 3)
+@Warmup(iterations = 2)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Timeout(time = 15)
-public class MyBenchmark {
+public class StreamBench {
 
+
+    @Benchmark
+    public void childFirst(Blackhole bh, ParserState state) {
+        state.bench(bh, (i, n) -> i.firstChild(n, ASTBreakStatement.class));
+    }
+//
 //    @Benchmark
-//    public static void testOpt(ParserState state, Blackhole blackhole) {
-//        state.bench(node -> descendantsByOptConcat(node).forEach(blackhole::consume));
+//    public void countChildren(Blackhole bh, ParserState state) {
+//        state.bench(bh, (i, n) -> i.countChildren(n, ASTBreakStatement.class));
 //    }
 //
-//
 //    @Benchmark
-//    public static void testIter(ParserState state, Blackhole blackhole) {
-//        state.bench(node -> descendantsByIter(node).forEach(blackhole::consume));
+//    public void isEmpty(Blackhole bh, ParserState state) {
+//        state.bench(bh, (i, n) -> i.childrenIsEmpty(n, ASTBreakStatement.class));
 //    }
 
-    //
-    //    @Benchmark
-    //    public static void testConcat(ParserState state, Blackhole blackhole) {
-    //        state.bench(node -> descendantsByConcat(node).forEach(blackhole::consume));
-    //    }
-
-    //        @Benchmark
-    //        public static void testFlatmap(ParserState state, Blackhole blackhole) {
-    //            state.bench(node -> descendantsByFlatmap(node).forEach(blackhole::consume));
-    //        }
-    //
-    //
-    //    @Benchmark
-    //    public static void testStream(ParserState state, Blackhole blackhole) {
-    //        state.bench(node -> node.descendants(ASTBreakStatement.class).first().ifPresent(blackhole::consume));
-    //    }
-
-
     @Benchmark
-    public static void testDescendantsThenFirst(ParserState state, Blackhole blackhole) {
-        state.bench(1000, node -> blackhole.consume(node.descendants(ASTAnnotation.class).first()));
+    public void toList(Blackhole bh, ParserState state) {
+        state.bench(bh, (i, n) -> i.childrenList(n, ASTBreakStatement.class));
     }
 
 
-    @Benchmark
-    public static void testGetFirstDescendantOfType(ParserState state, Blackhole blackhole) {
-        state.bench(1000, node -> blackhole.consume(TraversalUtils.getFirstDescendantOfType(ASTAnnotation.class, node)));
-    }
+
+    /*
+
+        @Override
+        public @Nullable R first() {
+            return TraversalUtils.getFirstChildOfType(target, node);
+        }
+
+        @Override
+        public int count() {
+            return TraversalUtils.countChildrenOfType(target, node);
+        }
+
+        @Override
+        public boolean nonEmpty() {
+            return TraversalUtils.getFirstChildOfType(target, node) != null;
+        }
+
+        @Override
+        public List<R> toList() {
+            return TraversalUtils.findChildrenOfType(target, node);
+        }
+     */
 
 
-    @Benchmark
-    public static void testChildrenThenFirst(ParserState state, Blackhole blackhole) {
-        state.bench(1, node -> node.descendants().forEach(it -> blackhole.consume(node.children().first(ASTBreakStatement.class))));
-    }
-
-
-    @Benchmark
-    public static void testChildrenClassThenFirst(ParserState state, Blackhole blackhole) {
-        state.bench(1, node -> node.descendants().forEach(it -> blackhole.consume(node.children(ASTBreakStatement.class).first())));
-    }
-
-
-    @Benchmark
-    public static void testGetFirstChildOfType(ParserState state, Blackhole blackhole) {
-        state.bench(1, node -> node.descendants().forEach(it -> blackhole.consume(TraversalUtils.getFirstChildOfType(ASTBreakStatement.class, node))));
+    public static void main(String[] args) throws Exception {
+        Options options = new OptionsBuilder().include(StreamBench.class.getName()).build();
+        new Runner(options).run();
     }
 
 
@@ -134,11 +132,14 @@ public class MyBenchmark {
     public static class ParserState {
 
         Parser newParser;
-        private Reader source;
-
+        @Param({"STREAM"})
+        StreamImplementation impl;
         @Param({"/PLSQLParser.java"})
         String sourceFname;
+        private Reader source;
         private Node acu;
+        private Node annot;
+
 
         @Setup
         public void setup() throws IOException {
@@ -149,17 +150,16 @@ public class MyBenchmark {
 
             newParser = lvh.getParser(lvh.getDefaultParserOptions());
 
-            InputStreamReader streamReader = new InputStreamReader(MyBenchmark.class.getResourceAsStream(sourceFname));
+            InputStreamReader streamReader = new InputStreamReader(StreamBench.class.getResourceAsStream(sourceFname));
             source = new StringReader(IOUtils.toString(streamReader));
             streamReader.close();
+            acu = newParser.parse(sourceFname, source);
+            annot = acu.descendants().first(ASTAnnotation.class).ancestors(ASTMethodDeclaration.class).first();
         }
 
 
-        public void bench(int iter, Consumer<Node> consumer) {
-            acu = newParser.parse(sourceFname, source);
-            for (int i = 0; i < iter; i++) {
-                consumer.accept(acu);
-            }
+        public void bench(Blackhole bh, BiFunction<StreamImplementation, Node, ?> consumer) {
+            annot.descendantsOrSelf().forEach(it-> bh.consume(consumer.apply(impl, acu)));
         }
 
 
@@ -169,5 +169,4 @@ public class MyBenchmark {
         }
 
     }
-
 }

@@ -39330,6 +39330,7 @@ String expression() :
         boolean jjtc000 = true;
         jjtree.openNodeScope(jjtn000);
         PLSQLNode simpleNode = null;
+        @Interesting
         StringBuilder sb = new StringBuilder();
         try {
             if (jj_2_150(2147483647)) {
@@ -69830,7 +69831,6 @@ Unlike the ALTER TYPE, it does not seem to alter the structure of the object.
         return false;
     }
 
-    @Deprecated
     private boolean jj_3R_189() {
         Token xsp;
         xsp = jj_scanpos;
