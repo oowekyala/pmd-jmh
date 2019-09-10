@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 
@@ -62,39 +61,66 @@ import net.sourceforge.pmd.lang.LanguageRegistry;
 import net.sourceforge.pmd.lang.LanguageVersionHandler;
 import net.sourceforge.pmd.lang.Parser;
 import net.sourceforge.pmd.lang.ast.Node;
+import net.sourceforge.pmd.lang.ast.NodeStream;
+import net.sourceforge.pmd.lang.ast.internal.SmallStreamImpl;
+import net.sourceforge.pmd.lang.ast.internal.StreamImpl;
 import net.sourceforge.pmd.lang.java.ast.ASTAnnotation;
-import net.sourceforge.pmd.lang.java.ast.ASTBreakStatement;
+import net.sourceforge.pmd.lang.java.ast.ASTBlock;
+import net.sourceforge.pmd.lang.java.ast.ASTBlockStatement;
+import net.sourceforge.pmd.lang.java.ast.ASTIfStatement;
 import net.sourceforge.pmd.lang.java.ast.ASTMethodDeclaration;
+import net.sourceforge.pmd.lang.java.ast.ASTStatement;
 
 
 @BenchmarkMode(Mode.Throughput)
 @Fork(value = 1)
 @Measurement(iterations = 3)
 @Warmup(iterations = 2)
-@OutputTimeUnit(TimeUnit.SECONDS)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Timeout(time = 15)
 public class StreamBench {
 
 
+    @SuppressWarnings("unchecked")
+    private static final Class<? extends Node>[] types = new Class[]{
+        ASTIfStatement.class,
+        ASTStatement.class,
+        ASTBlock.class,
+        ASTBlockStatement.class,
+        ASTStatement.class
+    };
+
     @Benchmark
-    public void childFirst(Blackhole bh, ParserState state) {
-        state.bench(bh, (i, n) -> i.firstChild(n, Node.class));
+    public void iterImpl(Blackhole bh, ParserState state) {
+        state.bench(bh, (i, n) -> makeStream(state.pipelineLength, n, (nodes, aClass) -> nodes.flatMap(it -> StreamImpl.children(it, aClass))));
     }
 
     @Benchmark
-    public void countChildren(Blackhole bh, ParserState state) {
-        state.bench(bh, (i, n) -> i.countChildren(n, Node.class));
+    public void streamImpl(Blackhole bh, ParserState state) {
+        state.bench(bh, (i, n) -> makeStream(state.pipelineLength, n, (nodes, aClass) -> nodes.flatMap(it -> SmallStreamImpl.children(it, aClass))));
     }
+
+
+    private Iterable<?> makeStream(int len, Node n, BiFunction<NodeStream<? extends Node>, Class<? extends Node>, NodeStream<? extends Node>> children) {
+        NodeStream<? extends Node> s = n.asStream();
+
+        for (int k = 0; k < len; k++) {
+            s = children.apply(s, types[k % types.length]);
+        }
+
+        return s;
+    }
+
 //
 //    @Benchmark
 //    public void isEmpty(Blackhole bh, ParserState state) {
 //        state.bench(bh, (i, n) -> i.childrenIsEmpty(n, ASTBreakStatement.class));
 //    }
-
-    @Benchmark
-    public void toList(Blackhole bh, ParserState state) {
-        state.bench(bh, (i, n) -> i.childrenList(n, Node.class));
-    }
+    //
+    //    @Benchmark
+    //    public void toList(Blackhole bh, ParserState state) {
+    //        state.bench(bh, (i, n) -> i.childrenList(n, Node.class));
+    //    }
 
 
 
@@ -132,10 +158,12 @@ public class StreamBench {
     public static class ParserState {
 
         Parser newParser;
-        @Param({"OPTIMAL", "OPT_RAW"})
-        StreamImplementation impl;
+        //        @Param({"OPTIMAL", "OPT_RAW"})
+        StreamImplementation impl = StreamImplementation.OPTIMAL;
         @Param({"/PLSQLParser.java"})
         String sourceFname;
+        @Param({"1", "2", "4", "8", "16"})
+        int pipelineLength;
         private Reader source;
         private Node acu;
         private Node annot;
@@ -158,8 +186,8 @@ public class StreamBench {
         }
 
 
-        public void bench(Blackhole bh, BiFunction<StreamImplementation, Node, ?> consumer) {
-            annot.descendantsOrSelf().forEach(it-> bh.consume(consumer.apply(impl, acu)));
+        public void bench(Blackhole bh, BiFunction<StreamImplementation, Node, Iterable<?>> consumer) {
+            acu.asStream().forEach(it -> consumer.apply(impl, acu).forEach(bh::consume));
         }
 
 
