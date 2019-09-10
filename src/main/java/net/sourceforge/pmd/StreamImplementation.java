@@ -109,6 +109,58 @@ StreamBench.toList      OPTIMAL   /PLSQLParser.java  thrpt    3  9324,981 ±  89
         public <R extends Node> List<R> childrenList(Node n, Class<R> target) {
             return deopt(StreamImpl.children(n, target)).toList();
         }
+    },
+    ITER_RAW {
+        @Override
+        public <R extends Node> @Nullable Node firstChild(Node n, Class<R> target) {
+            return SmallStreamImpl.children(n).first();
+        }
+
+
+        @Override
+        public <R extends Node> int countChildren(Node n, Class<R> target) {
+            return SmallStreamImpl.children(n).count();
+        }
+
+
+        @Override
+        public <R extends Node> boolean childrenIsEmpty(Node n, Class<R> target) {
+            return SmallStreamImpl.children(n).isEmpty();
+        }
+
+
+        @Override
+        public <R extends Node> List<Node> childrenList(Node n, Class<R> target) {
+            return SmallStreamImpl.children(n).toList();
+        }
+
+    },
+
+    OPT_RAW {
+        @Override
+        public <R extends Node> @Nullable Node firstChild(Node n, Class<R> target) {
+            return StreamImpl.children(n, target).first();
+        }
+
+
+        @Override
+        public <R extends Node> int countChildren(Node n, Class<R> target) {
+            return StreamImpl.children(n, target).count();
+        }
+
+
+        @Override
+        public <R extends Node> boolean childrenIsEmpty(Node n, Class<R> target) {
+            return StreamImpl.children(n, target).isEmpty();
+        }
+
+
+        @Override
+        public <R extends Node> List<R> childrenList(Node n, Class<R> target) {
+            return StreamImpl.children(n, target).toList();
+        }
+
+
     };
 
 

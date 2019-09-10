@@ -78,13 +78,13 @@ public class StreamBench {
 
     @Benchmark
     public void childFirst(Blackhole bh, ParserState state) {
-        state.bench(bh, (i, n) -> i.firstChild(n, ASTBreakStatement.class));
+        state.bench(bh, (i, n) -> i.firstChild(n, Node.class));
     }
-//
-//    @Benchmark
-//    public void countChildren(Blackhole bh, ParserState state) {
-//        state.bench(bh, (i, n) -> i.countChildren(n, ASTBreakStatement.class));
-//    }
+
+    @Benchmark
+    public void countChildren(Blackhole bh, ParserState state) {
+        state.bench(bh, (i, n) -> i.countChildren(n, Node.class));
+    }
 //
 //    @Benchmark
 //    public void isEmpty(Blackhole bh, ParserState state) {
@@ -93,7 +93,7 @@ public class StreamBench {
 
     @Benchmark
     public void toList(Blackhole bh, ParserState state) {
-        state.bench(bh, (i, n) -> i.childrenList(n, ASTBreakStatement.class));
+        state.bench(bh, (i, n) -> i.childrenList(n, Node.class));
     }
 
 
@@ -132,7 +132,7 @@ public class StreamBench {
     public static class ParserState {
 
         Parser newParser;
-        @Param({"STREAM"})
+        @Param({"OPTIMAL", "OPT_RAW"})
         StreamImplementation impl;
         @Param({"/PLSQLParser.java"})
         String sourceFname;
