@@ -36,11 +36,14 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
@@ -48,40 +51,76 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
 import net.sourceforge.pmd.lang.LanguageRegistry;
 import net.sourceforge.pmd.lang.LanguageVersionHandler;
 import net.sourceforge.pmd.lang.Parser;
-import net.sourceforge.pmd.lang.ast.Node;
-import net.sourceforge.pmd.lang.java.ast.ASTCompilationUnit;
-import net.sourceforge.pmd.lang.java.ast.JavaNode;
-import net.sourceforge.pmd.lang.java.ast.JavaParserVisitorAdapter;
+import net.sourceforge.pmd.util.filter.RegexStringFilter;
 
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.Provider;
-import com.github.javaparser.Providers;
 import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.CompilationUnit;
 
 
+@Fork(1)
+@Measurement(iterations = 2, timeUnit = TimeUnit.SECONDS, time = 2)
+@Warmup(iterations = 2, timeUnit = TimeUnit.SECONDS, time = 2)
 @BenchmarkMode(Mode.Throughput)
-@OutputTimeUnit(TimeUnit.SECONDS)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Benchmark)
 public class MyBenchmark {
 
 
+    private static RegexStringFilter filter;
+    private static RegexStringFilter baseline;
+    private static Predicate<String> pattern;
+    private static Predicate<String> patternBs;
+
+    static {
+        Pattern p = Pattern.compile("^.*o\\.java$");
+        pattern = s -> p.matcher(s).matches();
+        filter = new RegexStringFilter("^.*o\\.java$");
+        assert filter.getEndsWith() != null : "no opt";
+        baseline = new RegexStringFilter("^o.*\\.java$");
+        assert baseline.getEndsWith() == null : "opt";
+        Pattern pbs = Pattern.compile("^o.*\\.java$");
+        patternBs = s -> pbs.matcher(s).matches();
+    }
+
+    @Param({
+        "o.jaja",
+        "o.java",
+        "odeiehddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddo.java",
+        ".java",
+        "java",
+    })
+    public String data;
+
+
     @Benchmark
-    public void testNewParser(ParserState state, Blackhole blackhole) {
-        state.bench(false, blackhole);
+    public void testOpt(Blackhole blackhole) {
+        blackhole.consume(filter.filter(data));
     }
 
 
     @Benchmark
-    public void testJavaParser(ParserState state, Blackhole blackhole) {
-        state.benchJP(blackhole);
+    public void testRegular(Blackhole blackhole) {
+        blackhole.consume(pattern.test(data));
     }
 
-//
+
+    @Benchmark
+    public void testOptBaseline(Blackhole blackhole) {
+        blackhole.consume(baseline.filter(data));
+    }
+
+
+    @Benchmark
+    public void testRegularBaseline(Blackhole blackhole) {
+        blackhole.consume(patternBs.test(data));
+    }
+
+    //
 //    @Benchmark
 //    public void testNewVisit(ParserState state, Blackhole blackhole) {
 //        state.bench(false, node -> new JavaParserVisitorAdapter() {
@@ -114,11 +153,12 @@ public class MyBenchmark {
         private Reader source;
 
         @Param( {
-		"/JavaParser.java", 
-		// "/PLSQLParser.java"
-	})
+            "/JavaParser.java",
+            // "/PLSQLParser.java"
+        })
 
         private String sourceFname;
+
 
         @Setup
         public void setup() throws IOException {
@@ -135,15 +175,16 @@ public class MyBenchmark {
 
             oldParser = oldLvh.getParser(oldLvh.getDefaultParserOptions());
 
-
             InputStreamReader streamReader = new InputStreamReader(MyBenchmark.class.getResourceAsStream(sourceFname));
             source = new StringReader(IOUtils.toString(streamReader));
             streamReader.close();
         }
 
+
         public void bench(boolean old, Blackhole blackhole) {
             blackhole.consume((old ? oldParser : newParser).parse(sourceFname, source));
         }
+
 
         public void benchJP(Blackhole blackhole) {
             blackhole.consume(StaticJavaParser.parse(source));
