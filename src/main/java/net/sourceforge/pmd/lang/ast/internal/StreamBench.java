@@ -29,7 +29,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.sourceforge.pmd;
+package net.sourceforge.pmd.lang.ast.internal;
+
+import static net.sourceforge.pmd.lang.ast.internal.StreamImpl.empty;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -37,8 +39,10 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import org.apache.commons.io.IOUtils;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -62,8 +66,6 @@ import net.sourceforge.pmd.lang.LanguageVersionHandler;
 import net.sourceforge.pmd.lang.Parser;
 import net.sourceforge.pmd.lang.ast.Node;
 import net.sourceforge.pmd.lang.ast.NodeStream;
-import net.sourceforge.pmd.lang.ast.internal.SmallStreamImpl;
-import net.sourceforge.pmd.lang.ast.internal.StreamImpl;
 import net.sourceforge.pmd.lang.java.ast.ASTAnnotation;
 import net.sourceforge.pmd.lang.java.ast.ASTBlock;
 import net.sourceforge.pmd.lang.java.ast.ASTBlockStatement;
@@ -91,14 +93,21 @@ public class StreamBench {
     };
 
     @Benchmark
-    public void iterImpl(Blackhole bh, ParserState state) {
-        state.bench(bh, (i, n) -> makeStream(state.pipelineLength, n, (nodes, aClass) -> nodes.flatMap(it -> StreamImpl.children(it, aClass))));
+    public void eagerImpl(Blackhole bh, ParserState state) {
+        state.bench(bh, n -> makeStream(state.pipelineLength, n, (nodes, aClass) -> nodes.flatMap(it -> it.children(aClass))));
     }
 
     @Benchmark
-    public void streamImpl(Blackhole bh, ParserState state) {
-        state.bench(bh, (i, n) -> makeStream(state.pipelineLength, n, (nodes, aClass) -> nodes.flatMap(it -> SmallStreamImpl.children(it, aClass))));
+    public void lazyImpl(Blackhole bh, ParserState state) {
+        state.bench(bh, n -> makeStream(state.pipelineLength, n, (nodes, aClass) -> nodes.flatMap(it -> oldChildren(it, aClass))));
     }
+
+
+    private static <R extends Node> NodeStream<R> oldChildren(@NonNull Node node, Class<R> target) {
+        return node.jjtGetNumChildren() == 0 ? empty()
+                                             : new LazyFilteredChildrenStream<>(node, Filtermap.isInstance(target));
+    }
+
 
 
     private Iterable<?> makeStream(int len, Node n, BiFunction<NodeStream<? extends Node>, Class<? extends Node>, NodeStream<? extends Node>> children) {
@@ -158,8 +167,6 @@ public class StreamBench {
     public static class ParserState {
 
         Parser newParser;
-        //        @Param({"OPTIMAL", "OPT_RAW"})
-        StreamImplementation impl = StreamImplementation.OPTIMAL;
         @Param({"/PLSQLParser.java"})
         String sourceFname;
         @Param({"1", "2", "4", "8", "16"})
@@ -186,8 +193,8 @@ public class StreamBench {
         }
 
 
-        public void bench(Blackhole bh, BiFunction<StreamImplementation, Node, Iterable<?>> consumer) {
-            acu.asStream().forEach(it -> consumer.apply(impl, acu).forEach(bh::consume));
+        public void bench(Blackhole bh, Function<Node, Iterable<?>> consumer) {
+            acu.asStream().forEach(it -> consumer.apply(acu).forEach(bh::consume));
         }
 
 
