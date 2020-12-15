@@ -31,15 +31,13 @@
 
 package net.sourceforge.pmd;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -50,152 +48,81 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
-import net.sourceforge.pmd.lang.LanguageRegistry;
-import net.sourceforge.pmd.lang.LanguageVersionHandler;
-import net.sourceforge.pmd.lang.Parser;
-import net.sourceforge.pmd.util.filter.RegexStringFilter;
-
-import com.github.javaparser.StaticJavaParser;
-
 
 @Fork(1)
-@Measurement(iterations = 2, timeUnit = TimeUnit.SECONDS, time = 2)
-@Warmup(iterations = 2, timeUnit = TimeUnit.SECONDS, time = 2)
-@BenchmarkMode(Mode.Throughput)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Measurement(iterations = 4, timeUnit = TimeUnit.SECONDS, time = 1)
+@Warmup(iterations = 3, timeUnit = TimeUnit.SECONDS, time = 1)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Benchmark)
 public class MyBenchmark {
+    /*
+    Results:
+
+openjdk version "1.8.0_272"
+OpenJDK Runtime Environment (build 1.8.0_272-b10)
+OpenJDK 64-Bit Server VM (build 25.272-b10, mixed mode)
 
 
-    private static RegexStringFilter filter;
-    private static RegexStringFilter baseline;
-    private static Predicate<String> pattern;
-    private static Predicate<String> patternBs;
+    Benchmark               Mode  Cnt   Score    Error  Units
+    MyBenchmark.withChar    avgt    4  52,382 ± 23,718  us/op
+    MyBenchmark.withString  avgt    4  51,795 ± 23,384  us/op
 
-    static {
-        Pattern p = Pattern.compile("^.*o\\.java$");
-        pattern = s -> p.matcher(s).matches();
-        filter = new RegexStringFilter("^.*o\\.java$");
-        assert filter.getEndsWith() != null : "no opt";
-        baseline = new RegexStringFilter("^o.*\\.java$");
-        assert baseline.getEndsWith() == null : "opt";
-        Pattern pbs = Pattern.compile("^o.*\\.java$");
-        patternBs = s -> pbs.matcher(s).matches();
+openjdk version "13.0.4" 2020-07-14
+OpenJDK Runtime Environment Zulu13.33+25-CA (build 13.0.4+8-MTS)
+OpenJDK 64-Bit Server VM Zulu13.33+25-CA (build 13.0.4+8-MTS, mixed mode, sharing)
+
+    Benchmark               Mode  Cnt   Score    Error  Units
+    MyBenchmark.withChar    avgt    4  58,963 ±  7,462  us/op
+    MyBenchmark.withString  avgt    4  55,696 ± 16,882  us/op
+
+
+openjdk version "15.0.1" 2020-10-20
+OpenJDK Runtime Environment AdoptOpenJDK (build 15.0.1+9)
+Eclipse OpenJ9 VM AdoptOpenJDK (build openj9-0.23.0, JRE 15 Linux amd64-64-Bit Compressed References 20201022_81 (JIT enabled, AOT enabled)
+
+    Benchmark               Mode  Cnt   Score   Error  Units
+    MyBenchmark.withChar    avgt    4  11,971 ± 0,743  us/op
+    MyBenchmark.withString  avgt    4  25,687 ± 1,840  us/op
+
+     */
+
+    public static String[] data;
+
+    @Setup
+    public static void setup() {
+        List<String> list = Arrays.asList(
+                "ohdiue",
+                "hdiue",
+                "",
+                "hddx",
+                "o",
+                "h",
+                "ohh"
+        );
+        list = Collections.nCopies(1000, list)
+                .stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+        Collections.shuffle(list);
+        data = list.toArray(new String[0]);
     }
-
-    @Param({
-        "o.jaja",
-        "o.java",
-        "odeiehddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddo.java",
-        ".java",
-        "java",
-    })
-    public String data;
 
 
     @Benchmark
-    public void testOpt(Blackhole blackhole) {
-        blackhole.consume(filter.filter(data));
+    public void withString(Blackhole blackhole) {
+        for (String s : data)
+            blackhole.consume(s.startsWith("o"));
     }
 
 
     @Benchmark
-    public void testRegular(Blackhole blackhole) {
-        blackhole.consume(pattern.test(data));
-    }
-
-
-    @Benchmark
-    public void testOptBaseline(Blackhole blackhole) {
-        blackhole.consume(baseline.filter(data));
-    }
-
-
-    @Benchmark
-    public void testRegularBaseline(Blackhole blackhole) {
-        blackhole.consume(patternBs.test(data));
-    }
-
-    //
-//    @Benchmark
-//    public void testNewVisit(ParserState state, Blackhole blackhole) {
-//        state.bench(false, node -> new JavaParserVisitorAdapter() {
-//            @Override
-//            public Object visit(JavaNode node, Object data) {
-//                blackhole.consume(data);
-//                return super.visit(node, data);
-//            }
-//        }.visit((ASTCompilationUnit) node, new Object()));
-//    }
-//
-//
-//    @Benchmark
-//    public void testOldVisit(ParserState state, Blackhole blackhole) {
-//        state.bench(true, node -> new net.sourceforge.pmd.lang.oldjava.ast.JavaParserVisitorAdapter() {
-//            @Override
-//            public Object visit(net.sourceforge.pmd.lang.oldjava.ast.JavaNode node, Object data) {
-//                blackhole.consume(data);
-//                return super.visit(node, data);
-//            }
-//        }.visit((net.sourceforge.pmd.lang.oldjava.ast.ASTCompilationUnit) node, new Object()));
-//    }
-
-
-    @State(Scope.Benchmark)
-    public static class ParserState {
-
-        Parser newParser;
-        Parser oldParser;
-        private Reader source;
-
-        @Param( {
-            "/JavaParser.java",
-            // "/PLSQLParser.java"
-        })
-
-        private String sourceFname;
-
-
-        @Setup
-        public void setup() throws IOException {
-
-            LanguageVersionHandler lvh = LanguageRegistry.getLanguage("Java")
-                                                         .getDefaultVersion()
-                                                         .getLanguageVersionHandler();
-
-            newParser = lvh.getParser(lvh.getDefaultParserOptions());
-
-            LanguageVersionHandler oldLvh = LanguageRegistry.findLanguageByTerseName("oldjava")
-                                                            .getDefaultVersion()
-                                                            .getLanguageVersionHandler();
-
-            oldParser = oldLvh.getParser(oldLvh.getDefaultParserOptions());
-
-            InputStreamReader streamReader = new InputStreamReader(MyBenchmark.class.getResourceAsStream(sourceFname));
-            source = new StringReader(IOUtils.toString(streamReader));
-            streamReader.close();
-        }
-
-
-        public void bench(boolean old, Blackhole blackhole) {
-            blackhole.consume((old ? oldParser : newParser).parse(sourceFname, source));
-        }
-
-
-        public void benchJP(Blackhole blackhole) {
-            blackhole.consume(StaticJavaParser.parse(source));
-        }
-
-
-        @TearDown
-        public void tearDown() throws IOException {
-            source.close();
-        }
-
+    public void withChar(Blackhole blackhole) {
+        for (String s : data)
+            blackhole.consume(!s.isEmpty() && s.charAt(0) == 'o');
     }
 
 }
