@@ -71,7 +71,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 @BenchmarkMode(Mode.AverageTime)
 @Fork(value = 1)
-@Measurement(iterations = 10)
+@Measurement(iterations = 4)
 @Warmup(iterations = 2)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Timeout(time = 15)
@@ -82,6 +82,13 @@ public class StreamBench {
     public void optimizedLoop(Blackhole bh, ParserState state) {
         state.bench(bh, n ->
                 n.acceptVisitor(new JavaVisitorBase<Void, Void>() {
+                    @Override
+                    protected Void visitChildren(Node node, Void data) {
+                        for (int i = 0, numChildren = node.getNumChildren(); i < numChildren; i++) {
+                            node.getChild(i).acceptVisitor(this, data);
+                        }
+                        return null;
+                    }
                 }, null)
         );
     }
@@ -106,9 +113,10 @@ public class StreamBench {
     public void optChildren(Blackhole bh, ParserState state) {
         state.bench(bh, n ->
                 n.acceptVisitor(new JavaVisitorBase<Void, Void>() {
+
                     @Override
                     protected Void visitChildren(Node node, Void data) {
-                        for (Node n : ((AbstractNode<?, JavaNode>) node).childrenOptimized()) {
+                        for (Node n : node.childrenOpt()) {
                             n.acceptVisitor(this, data);
                         }
                         return null;
