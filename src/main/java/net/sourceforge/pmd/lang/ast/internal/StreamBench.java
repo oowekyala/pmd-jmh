@@ -31,18 +31,25 @@
 
 package net.sourceforge.pmd.lang.ast.internal;
 
-import static net.sourceforge.pmd.lang.ast.internal.StreamImpl.empty;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.apache.commons.io.IOUtils;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import net.sourceforge.pmd.internal.util.IOUtil;
+import net.sourceforge.pmd.lang.Language;
+import net.sourceforge.pmd.lang.LanguageProcessor;
+import net.sourceforge.pmd.lang.LanguageProcessorRegistry;
+import net.sourceforge.pmd.lang.LanguageRegistry;
+import net.sourceforge.pmd.lang.ast.AstVisitorBase;
+import net.sourceforge.pmd.lang.ast.Node;
+import net.sourceforge.pmd.lang.ast.Parser;
+import net.sourceforge.pmd.lang.ast.Parser.ParserTask;
+import net.sourceforge.pmd.lang.ast.SemanticErrorReporter;
+import net.sourceforge.pmd.lang.ast.impl.AbstractNode;
+import net.sourceforge.pmd.lang.document.TextDocument;
+import net.sourceforge.pmd.lang.java.ast.JavaNode;
+import net.sourceforge.pmd.lang.java.ast.JavaVisitorBase;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -61,64 +68,55 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import net.sourceforge.pmd.lang.LanguageRegistry;
-import net.sourceforge.pmd.lang.LanguageVersionHandler;
-import net.sourceforge.pmd.lang.Parser;
-import net.sourceforge.pmd.lang.ast.Node;
-import net.sourceforge.pmd.lang.ast.NodeStream;
-import net.sourceforge.pmd.lang.java.ast.ASTAnnotation;
-import net.sourceforge.pmd.lang.java.ast.ASTBlock;
-import net.sourceforge.pmd.lang.java.ast.ASTBlockStatement;
-import net.sourceforge.pmd.lang.java.ast.ASTIfStatement;
-import net.sourceforge.pmd.lang.java.ast.ASTMethodDeclaration;
-import net.sourceforge.pmd.lang.java.ast.ASTStatement;
 
-
-@BenchmarkMode(Mode.Throughput)
+@BenchmarkMode(Mode.AverageTime)
 @Fork(value = 1)
-@Measurement(iterations = 3)
+@Measurement(iterations = 10)
 @Warmup(iterations = 2)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Timeout(time = 15)
 public class StreamBench {
 
 
-    @SuppressWarnings("unchecked")
-    private static final Class<? extends Node>[] types = new Class[]{
-        ASTIfStatement.class,
-        ASTStatement.class,
-        ASTBlock.class,
-        ASTBlockStatement.class,
-        ASTStatement.class
-    };
+    @Benchmark
+    public void optimizedLoop(Blackhole bh, ParserState state) {
+        state.bench(bh, n ->
+                n.acceptVisitor(new JavaVisitorBase<Void, Void>() {
+                }, null)
+        );
+    }
+
 
     @Benchmark
-    public void eagerImpl(Blackhole bh, ParserState state) {
-        state.bench(bh, n -> makeStream(state.pipelineLength, n, (nodes, aClass) -> nodes.flatMap(it -> it.children(aClass))));
+    public void nonOptChildren(Blackhole bh, ParserState state) {
+        state.bench(bh, n ->
+                n.acceptVisitor(new JavaVisitorBase<Void, Void>() {
+                    @Override
+                    protected Void visitChildren(Node node, Void data) {
+                        for (Node n : node.children()) {
+                            n.acceptVisitor(this, data);
+                        }
+                        return null;
+                    }
+                }, null)
+        );
     }
 
     @Benchmark
-    public void lazyImpl(Blackhole bh, ParserState state) {
-        state.bench(bh, n -> makeStream(state.pipelineLength, n, (nodes, aClass) -> nodes.flatMap(it -> oldChildren(it, aClass))));
+    public void optChildren(Blackhole bh, ParserState state) {
+        state.bench(bh, n ->
+                n.acceptVisitor(new JavaVisitorBase<Void, Void>() {
+                    @Override
+                    protected Void visitChildren(Node node, Void data) {
+                        for (Node n : ((AbstractNode<?, JavaNode>) node).childrenOptimized()) {
+                            n.acceptVisitor(this, data);
+                        }
+                        return null;
+                    }
+                }, null)
+        );
     }
 
-
-    private static <R extends Node> NodeStream<R> oldChildren(@NonNull Node node, Class<R> target) {
-        return node.jjtGetNumChildren() == 0 ? empty()
-                                             : new LazyFilteredChildrenStream<>(node, Filtermap.isInstance(target));
-    }
-
-
-
-    private Iterable<?> makeStream(int len, Node n, BiFunction<NodeStream<? extends Node>, Class<? extends Node>, NodeStream<? extends Node>> children) {
-        NodeStream<? extends Node> s = n.asStream();
-
-        for (int k = 0; k < len; k++) {
-            s = children.apply(s, types[k % types.length]);
-        }
-
-        return s;
-    }
 
 //
 //    @Benchmark
@@ -169,38 +167,36 @@ public class StreamBench {
         Parser newParser;
         @Param({"/PLSQLParser.java"})
         String sourceFname;
-        @Param({"1", "2", "4", "8", "16"})
-        int pipelineLength;
-        private Reader source;
         private Node acu;
-        private Node annot;
 
+        private LanguageProcessor java;
 
         @Setup
         public void setup() throws IOException {
 
-            LanguageVersionHandler lvh = LanguageRegistry.getLanguage("Java")
-                                                         .getDefaultVersion()
-                                                         .getLanguageVersionHandler();
+            Language lang = LanguageRegistry.PMD.getLanguageById("java");
+            this.java = lang.createProcessor(lang.newPropertyBundle());
 
-            newParser = lvh.getParser(lvh.getDefaultParserOptions());
+            newParser = java.services().getParser();
 
-            InputStreamReader streamReader = new InputStreamReader(StreamBench.class.getResourceAsStream(sourceFname));
-            source = new StringReader(IOUtils.toString(streamReader));
-            streamReader.close();
-            acu = newParser.parse(sourceFname, source);
-            annot = acu.descendants().first(ASTAnnotation.class).ancestors(ASTMethodDeclaration.class).first();
+            TextDocument td;
+            try (InputStreamReader streamReader = new InputStreamReader(StreamBench.class.getResourceAsStream(sourceFname))) {
+                td = TextDocument.readOnlyString(IOUtil.readToString(streamReader), java.getLanguageVersion());
+            }
+            acu = newParser.parse(new ParserTask(td, SemanticErrorReporter.noop(),
+                    LanguageProcessorRegistry.singleton(java)
+            ));
         }
 
 
-        public void bench(Blackhole bh, Function<Node, Iterable<?>> consumer) {
-            acu.asStream().forEach(it -> consumer.apply(acu).forEach(bh::consume));
+        public void bench(Blackhole bh, Function<Node, Void> consumer) {
+            bh.consume(consumer.apply(acu));
         }
 
 
         @TearDown
-        public void tearDown() throws IOException {
-            source.close();
+        public void tearDown() throws Exception {
+            java.close();
         }
 
     }
